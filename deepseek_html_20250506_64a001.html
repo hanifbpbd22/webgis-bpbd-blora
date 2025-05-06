@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebGIS Pelaporan Bencana Blora</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <style>
+    #map { height: 600px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    // Inisialisasi peta
+    var map = L.map('map').setView([-6.9762, 111.4191], 12); // Pusatkan di Blora
+
+    // Tambahkan base map
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Ambil data dari Google Apps Script API
+    fetch('https://script.google.com/macros/s/.../exec')
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(function(laporan) {
+          var icon;
+          switch(laporan.jenis) {
+            case "Longsor": icon = L.icon({ iconUrl: 'landslide.png', iconSize: [30, 30] }); break;
+            case "Banjir": icon = L.icon({ iconUrl: 'flood.png', iconSize: [30, 30] }); break;
+            default: icon = L.icon({ iconUrl: 'default.png', iconSize: [30, 30] });
+          }
+
+          var popupContent = `
+            <h3>${laporan.jenis}</h3>
+            <p><strong>Lokasi:</strong> ${laporan.lokasi}</p>
+            <p>${laporan.deskripsi}</p>
+            <img src="${laporan.foto}" width="200"><br>
+            <small>Status: ${laporan.status}</small>
+          `;
+
+          L.marker([laporan.koordinat.lat, laporan.koordinat.lng], { icon: icon })
+            .bindPopup(popupContent)
+            .addTo(map);
+        });
+      });
+  </script>
+</body>
+</html>
